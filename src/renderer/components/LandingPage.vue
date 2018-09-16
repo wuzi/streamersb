@@ -12,10 +12,27 @@
     </el-header>
     
     <el-main>
-      <el-table :data="tableData">
-        <el-table-column prop="name" label="Name"></el-table-column>
-        <el-table-column prop="key" label="Key binding"></el-table-column>
-        <el-table-column prop="actions" label="Actions" width="160"></el-table-column>
+      <el-table :data="tableData" height="450">
+        <el-table-column prop="name" label="Name" fixed></el-table-column>
+        <el-table-column label="Key binding">
+          <template slot-scope="scope">
+            <el-button
+              size="mini"
+              type="primary">{{ scope.row.key }}</el-button>
+          </template>
+        </el-table-column>
+        <el-table-column
+          label="Actions" width="160">
+          <template slot-scope="scope">
+            <el-button
+              size="mini"
+              icon="el-icon-caret-right"></el-button>
+            <el-button
+              size="mini"
+              type="danger"
+              icon="el-icon-delete"></el-button>
+          </template>
+        </el-table-column>
       </el-table>
     </el-main>
   </el-container>
@@ -27,8 +44,7 @@
     data: function () {
       const item = {
         name: 'Intense music',
-        key: 'F3',
-        actions: 'N/A'
+        key: 'F3'
       }
       return {
         active: true,
@@ -39,10 +55,6 @@
 </script>
 
 <style>
-  .el-container {
-    height: 100vh;
-  }
-
   .el-header {
     color: #333;
     font-size: 12px;
