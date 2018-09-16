@@ -133,7 +133,14 @@
     created () {
       // load data
       var sounds = localStorage.getItem('sounds')
-      if (sounds) this.tableData = JSON.parse(sounds)
+      if (sounds) {
+        this.tableData = JSON.parse(sounds)
+        for (let i in this.tableData) {
+          if (this.tableData[i].key) {
+            this.$electron.ipcRenderer.send('streamersb:register:shortcut', { accelerator: this.tableData[i].key, index: i })
+          }
+        }
+      }
   
       window.addEventListener('keydown', (e) => {
         if (this.dialogVisible) {
