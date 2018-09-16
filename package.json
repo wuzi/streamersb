@@ -53,6 +53,7 @@
   },
   "dependencies": {
     "axios": "^0.18.0",
+    "electron-is-accelerator": "^0.1.2",
     "element-ui": "^2.4.7",
     "vue": "^2.5.16",
     "vue-electron": "^1.0.6",

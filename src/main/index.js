@@ -1,6 +1,6 @@
 'use strict'
 
-import { app, BrowserWindow } from 'electron'
+import { app, BrowserWindow, ipcMain, globalShortcut } from 'electron'
 
 /**
  * Set `__static` path to static files in production
@@ -44,6 +44,16 @@ app.on('activate', () => {
   if (mainWindow === null) {
     createWindow()
   }
+})
+
+ipcMain.on('streamersb:register:shortcut', (event, arg) => {
+  globalShortcut.register(arg.accelerator, () => {
+    mainWindow.webContents.send('streamersb:play:sound', arg.index)
+  })
+})
+
+ipcMain.on('streamersb:unregister:shortcut', (event, arg) => {
+  globalShortcut.unregister(arg.accelerator)
 })
 
 /**

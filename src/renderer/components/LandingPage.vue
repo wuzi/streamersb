@@ -43,8 +43,10 @@
     <el-dialog
       title="Edit key binding"
       :visible.sync="dialogVisible"
-      width="30%">
+      width="40%"
+      style="text-align: center">
       <span ref="keyPressed">Press a key</span>
+      <p style="font-size: 12px">To use an existing shortcut you have to unbind it first</p>
       <span slot="footer" class="dialog-footer">
         <el-button @click="cancelEdit">Cancel</el-button>
         <el-button type="primary" @click="saveEdit">Confirm</el-button>
@@ -54,6 +56,8 @@
 </template>
 
 <script>
+  import isAccelerator from 'electron-is-accelerator'
+
   export default {
     name: 'landing-page',
     data: function () {
@@ -73,10 +77,13 @@
         this.$refs.selectFile.value = null
       },
       playSound (index, row) {
+        if (this.dialogVisible) return
+
         var audio = new Audio(this.tableData[index].path)
         audio.play()
       },
       removeSound (index, row) {
+        this.$electron.ipcRenderer.send('streamersb:unregister:shortcut', { accelerator: this.tableData[index].key })
         this.tableData = this.tableData.filter((file, i) => i !== index)
       },
       editKey (index, row) {
@@ -85,13 +92,33 @@
         if (this.tableData[index].key) this.$refs.keyPressed.innerHTML = this.tableData[index].key
       },
       saveEdit () {
+        if (!isAccelerator(this.$refs.keyPressed.innerHTML)) {
+          this.cancelEdit()
+          return
+        }
+
+        // if another sound has the same key, unregister it
+        for (let i in this.tableData) {
+          if (this.tableData[i].key === this.$refs.keyPressed.innerHTML) {
+            this.$electron.ipcRenderer.send('streamersb:unregister:shortcut', { accelerator: this.tableData[i].key })
+            this.tableData[i].key = null
+            break
+          }
+        }
+
+        // if the current sound already has a key, unregister it
+        if (this.tableData[this.editingIndex].key) {
+          this.$electron.ipcRenderer.send('streamersb:unregister:shortcut', { accelerator: this.tableData[this.editingIndex].key })
+        }
+
         this.dialogVisible = false
         this.tableData[this.editingIndex].key = this.$refs.keyPressed.innerHTML
-        this.$refs.keyPressed.innerHTML = 'Click to edit'
+        this.$electron.ipcRenderer.send('streamersb:register:shortcut', { accelerator: this.$refs.keyPressed.innerHTML, index: this.editingIndex })
+        this.$refs.keyPressed.innerHTML = 'Press a key'
       },
       cancelEdit () {
         this.dialogVisible = false
-        this.$refs.keyPressed.innerHTML = 'Click to edit'
+        this.$refs.keyPressed.innerHTML = 'Press a key'
       }
     },
     created () {
@@ -106,6 +133,10 @@
 
           this.$refs.keyPressed.innerHTML = text
         }
+      })
+
+      this.$electron.ipcRenderer.on('streamersb:play:sound', (event, arg) => {
+        this.playSound(arg, null)
       })
     }
   }
