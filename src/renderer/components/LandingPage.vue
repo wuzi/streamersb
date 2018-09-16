@@ -75,6 +75,8 @@
         var file = { name: event.target.files[0].name, path: event.target.files[0].path, key: null }
         this.tableData.push(file)
         this.$refs.selectFile.value = null
+
+        this.saveChanges()
       },
       playSound (index, row) {
         if (this.dialogVisible || !this.active) return
@@ -85,6 +87,8 @@
       removeSound (index, row) {
         this.$electron.ipcRenderer.send('streamersb:unregister:shortcut', { accelerator: this.tableData[index].key })
         this.tableData = this.tableData.filter((file, i) => i !== index)
+
+        this.saveChanges()
       },
       editKey (index, row) {
         this.editingIndex = index
@@ -115,13 +119,22 @@
         this.tableData[this.editingIndex].key = this.$refs.keyPressed.innerHTML
         this.$electron.ipcRenderer.send('streamersb:register:shortcut', { accelerator: this.$refs.keyPressed.innerHTML, index: this.editingIndex })
         this.$refs.keyPressed.innerHTML = 'Press a key'
+
+        this.saveChanges()
       },
       cancelEdit () {
         this.dialogVisible = false
         this.$refs.keyPressed.innerHTML = 'Press a key'
+      },
+      saveChanges () {
+        localStorage.setItem('sounds', JSON.stringify(this.tableData))
       }
     },
     created () {
+      // load data
+      var sounds = localStorage.getItem('sounds')
+      if (sounds) this.tableData = JSON.parse(sounds)
+  
       window.addEventListener('keydown', (e) => {
         if (this.dialogVisible) {
           var text = ''
