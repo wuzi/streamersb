@@ -77,7 +77,7 @@
         this.$refs.selectFile.value = null
       },
       playSound (index, row) {
-        if (this.dialogVisible) return
+        if (this.dialogVisible || !this.active) return
 
         var audio = new Audio(this.tableData[index].path)
         audio.play()
