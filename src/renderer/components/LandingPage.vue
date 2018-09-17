@@ -91,7 +91,12 @@
         this.saveChanges()
       },
       playSound (index, row) {
-        if (this.dialogVisible || !this.active) return
+        if (this.dialogVisible) return
+
+        if (!this.active) {
+          this.$message.error('The switch is off.')
+          return
+        }
 
         // if the sound is playing stop it
         if (this.tableData[index].audio !== null) {
