@@ -27,6 +27,13 @@
           label="Actions" width="160">
           <template slot-scope="scope">
             <el-button
+              v-if="scope.row.audio !== null"
+              size="mini"
+              icon="el-icon-loading"
+              type="success"
+              @click="playSound(scope.$index, scope.row)"></el-button>
+            <el-button
+              v-else
               size="mini"
               icon="el-icon-caret-right"
               @click="playSound(scope.$index, scope.row)"></el-button>
@@ -72,7 +79,12 @@
     },
     methods: {
       addSound (event) {
-        var file = { name: event.target.files[0].name, path: event.target.files[0].path, key: null }
+        var file = {
+          name: event.target.files[0].name,
+          path: event.target.files[0].path,
+          key: null,
+          audio: null
+        }
         this.tableData.push(file)
         this.$refs.selectFile.value = null
 
@@ -81,11 +93,30 @@
       playSound (index, row) {
         if (this.dialogVisible || !this.active) return
 
-        var audio = new Audio(this.tableData[index].path)
-        audio.play()
+        // if the sound is playing stop it
+        if (this.tableData[index].audio !== null) {
+          this.tableData[index].audio.pause()
+          this.tableData[index].audio = null
+          return
+        }
+
+        this.tableData[index].audio = new Audio(this.tableData[index].path)
+        this.tableData[index].audio.onended = () => {
+          this.tableData[index].audio = null
+        }
+        this.tableData[index].audio.play()
       },
       removeSound (index, row) {
-        this.$electron.ipcRenderer.send('streamersb:unregister:shortcut', { accelerator: this.tableData[index].key })
+        // if the sound is playing stop it
+        if (this.tableData[index].audio !== null) {
+          this.tableData[index].audio.pause()
+          this.tableData[index].audio = null
+        }
+
+        // if the sound has a key, unregister it
+        if (this.tableData[index].key !== null) {
+          this.$electron.ipcRenderer.send('streamersb:unregister:shortcut', { accelerator: this.tableData[index].key })
+        }
         this.tableData = this.tableData.filter((file, i) => i !== index)
 
         this.saveChanges()
