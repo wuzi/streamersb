@@ -97,6 +97,13 @@
       },
       saveEdit () {
         if (!isAccelerator(this.$refs.keyPressed.innerHTML)) {
+          this.$message.error('Invalid combination.')
+          this.cancelEdit()
+          return
+        }
+
+        if (this.$refs.keyPressed.innerHTML.length === 1) {
+          this.$message.error('A modifier is needed.')
           this.cancelEdit()
           return
         }
@@ -144,14 +151,20 @@
   
       window.addEventListener('keydown', (e) => {
         if (this.dialogVisible) {
-          var text = ''
+          var accelerator = ''
 
-          if (e.ctrlKey) text += 'Ctrl+'
-          if (e.shiftKey) text += 'Shift+'
-          if (e.altKey) text += 'Alt+'
-          if (e.key !== 'Control' && e.key !== 'Shift' && e.key !== 'Alt') text += e.key
+          if (e.altKey) accelerator += 'Alt+'
+          if (e.ctrlKey) accelerator += 'Ctrl+'
+          if (e.shiftKey) accelerator += 'Shift+'
 
-          this.$refs.keyPressed.innerHTML = text
+          if (e.keyCode !== 16 && e.keyCode !== 17 && e.keyCode !== 18) {
+            if (e.key.length === 1) accelerator += e.key.toUpperCase()
+            else if (e.key.includes('Arrow')) accelerator += e.key.replace('Arrow', '')
+            else accelerator += e.key
+          }
+
+          this.$refs.keyPressed.innerHTML = accelerator
+          e.preventDefault()
         }
       })
 
