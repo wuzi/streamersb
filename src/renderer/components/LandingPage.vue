@@ -165,7 +165,10 @@
         this.$refs.keyPressed.innerHTML = 'Press a key'
       },
       saveChanges () {
-        localStorage.setItem('sounds', JSON.stringify(this.tableData))
+        var sounds = this.tableData.map(sound => {
+          return Object.assign({audio: null}, sound)
+        })
+        localStorage.setItem('sounds', JSON.stringify(sounds))
       }
     },
     created () {
