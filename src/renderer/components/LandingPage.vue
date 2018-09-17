@@ -166,7 +166,7 @@
       },
       saveChanges () {
         var sounds = this.tableData.map(sound => {
-          return Object.assign({audio: null}, sound)
+          return Object.assign({}, sound, {audio: null})
         })
         localStorage.setItem('sounds', JSON.stringify(sounds))
       }
